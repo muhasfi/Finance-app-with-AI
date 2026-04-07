@@ -21,7 +21,15 @@ class TransactionService
             $data['amount_base'] = $data['amount'];
             $data['currency']    = auth()->user()->currency;
 
-            return Transaction::create($data);
+            $transaction = Transaction::create($data);
+
+            // Dispatch AI kategorisasi jika ada catatan dan belum ada kategori
+            // Hanya aktif jika GEMINI_API_KEY sudah diset di .env
+            if (config('services.gemini.api_key') && blank($data['category_id'] ?? null) && ! blank($transaction->note)) {
+                \App\Jobs\CategorizeTransactionJob::dispatchSync($transaction);
+            }
+
+            return $transaction;
         });
     }
 

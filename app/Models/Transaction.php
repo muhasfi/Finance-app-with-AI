@@ -14,9 +14,20 @@ class Transaction extends Model
     use HasFactory, HasUuids, SoftDeletes;
 
     protected $fillable = [
-        'account_id', 'category_id', 'transfer_pair_id', 'recurring_plan_id',
-        'type', 'amount', 'amount_base', 'currency',
-        'date', 'note', 'tags', 'receipt_path',
+        'account_id', 
+        'category_id', 
+        'transfer_pair_id', 
+        'recurring_plan_id',
+        'type', 
+        'amount', 
+        'amount_base', 
+        'currency',
+        'date', 
+        'note', 
+        'tags', 
+        'receipt_path', 
+        'ai_categorized', 
+        'ai_confidence',
     ];
 
     protected function casts(): array
@@ -27,6 +38,7 @@ class Transaction extends Model
             'amount_base' => 'decimal:2',
             'date'        => 'date',
             'tags'        => 'array',
+            'ai_categorized' => 'boolean',
         ];
     }
 

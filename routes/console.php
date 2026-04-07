@@ -1,8 +1,12 @@
 <?php
 
+use App\Jobs\CategorizeTransactionJob;
+use App\Jobs\Generateinsightjob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use App\Models\RecurringPlan;
+use App\Models\Transaction;
+use App\Models\User;
 use App\Services\TransactionService;
 use Illuminate\Support\Facades\Schedule;
 
@@ -33,3 +37,28 @@ Schedule::call(function () {
         }
     }
 })->dailyAt('07:00')->name('process-recurring-transactions');
+
+
+// ── Auto-kategorisasi transaksi tanpa kategori (AI) ──────────────────────
+// Jalankan setiap 30 menit
+if (config('services.gemini.api_key')) {
+    Schedule::call(function () {
+        \App\Models\Transaction::whereNull('category_id')
+            ->whereNotNull('note')
+            ->where('ai_categorized', false)
+            ->limit(30) // batch kecil agar tidak abuse API
+            ->get()
+            ->each(fn($tx) => \App\Jobs\CategorizeTransactionJob::dispatch($tx)->onQueue('ai'));
+    })->everyThirtyMinutes()->name('ai-auto-categorize');
+
+    // Generate insight bulanan untuk semua user aktif (tanggal 1, jam 08:00)
+    Schedule::call(function () {
+        \App\Models\User::active()->chunk(20, function ($users) {
+            foreach ($users as $user) {
+                \App\Jobs\GenerateInsightJob::dispatch($user, now()->month, now()->year)
+                    ->onQueue('ai')
+                    ->delay(now()->addSeconds(rand(0, 120)));
+            }
+        });
+    })->monthlyOn(1, '08:00')->name('ai-monthly-insights');
+}

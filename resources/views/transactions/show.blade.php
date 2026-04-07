@@ -68,7 +68,7 @@
                     @if ($transaction->receipt_path)
                         <div class="mt-3">
                             <p class="text-muted small mb-1">Bukti transaksi:</p>
-                            <a href="{{ Storage::url($transaction->receipt_path) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                            <a href="{{ url('/receipt/'.$transaction->receipt_path) }}" target="_blank" class="btn btn-sm btn-outline-secondary">
                                 <i class="bi bi-paperclip me-1"></i> Lihat Bukti
                             </a>
                         </div>

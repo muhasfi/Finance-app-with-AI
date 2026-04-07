@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use App\Services\TransactionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class TransactionController extends Controller
@@ -119,5 +120,16 @@ class TransactionController extends Controller
 
         return redirect()->route('transactions.index')
             ->with('success', 'Transaksi berhasil dihapus.');
+    }
+
+    public function img($path)
+    {
+        if (!Storage::disk('private')->exists($path)) {
+            abort(404);
+        }
+
+        return response()->file(
+            Storage::disk('private')->path($path)
+        );
     }
 }
