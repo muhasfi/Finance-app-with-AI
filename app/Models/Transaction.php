@@ -25,7 +25,8 @@ class Transaction extends Model
         'date', 
         'note', 
         'tags', 
-        'receipt_path', 
+        'receipt_path',
+        'import_hash',
         'ai_categorized', 
         'ai_confidence',
     ];

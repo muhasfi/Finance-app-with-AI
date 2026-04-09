@@ -5,8 +5,12 @@ use App\Http\Controllers\AiInsightController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RecurringPlanController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\TransferController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -31,11 +35,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::resource('transactions', TransactionController::class);
+    Route::resource('categories', CategoryController::class)->except('show');   
     Route::get('/receipt/{path}', [TransactionController::class, 'img'])
     ->where('path', '.*');
 
     Route::resource('accounts', AccountController::class)->except('show');
-    Route::resource('categories', CategoryController::class)->except('show');
+
+    Route::get('/transfer',  [TransferController::class, 'create'])->name('transfer.create');
+    Route::post('/transfer', [TransferController::class, 'store'])->name('transfer.store');
+    
 
     // Profil
     Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');
@@ -46,6 +54,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/ai/chat',          [ChatbotController::class, 'index'])->name('ai.chat');
     Route::post('/ai/chat/message', [ChatbotController::class, 'message'])->name('ai.chat.message');
     Route::post('/ai/chat/reset',   [ChatbotController::class, 'reset'])->name('ai.chat.reset');
+
+    Route::resource('recurring', RecurringPlanController::class)->except('show');
+    Route::patch('recurring/{recurring}/toggle', [RecurringPlanController::class, 'toggle'])
+        ->name('recurring.toggle');
+
+    // Import CSV
+    Route::get('/import',          [ImportController::class, 'create'])->name('import.create');
+    Route::post('/import/upload',  [ImportController::class, 'upload'])->name('import.upload');
+    Route::post('/import/confirm', [ImportController::class, 'confirm'])->name('import.confirm');
+
+    // Laporan & Export
+    Route::get('/reports',        [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
 
     // Insight keuangan bulanan
     Route::get('/ai/insights',         [AiInsightController::class, 'index'])->name('ai.insights');
@@ -60,7 +81,6 @@ Route::middleware(['auth', 'verified', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-
         Route::get('/dashboard', \App\Http\Controllers\Admin\DashboardController::class)
             ->name('dashboard');
 
@@ -72,6 +92,13 @@ Route::middleware(['auth', 'verified', 'admin'])
 
         Route::patch('users/{user}/activate', [\App\Http\Controllers\Admin\UserController::class, 'activate'])
             ->name('users.activate');
+
+        Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class)
+            ->except('show');
+
+        Route::get('audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])
+            ->name('audit-logs.index');
+
     });
 
 

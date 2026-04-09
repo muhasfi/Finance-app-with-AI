@@ -12,8 +12,17 @@
         </div>
     </div>
 
+    {{-- Toggle button --}}
+    <div class="d-flex justify-content-end mb-2">
+        <button id="toggleBalance" class="btn btn-sm btn-light">
+            <i class="bi bi-eye"></i>
+        </button>
+    </div>
+
     {{-- Kartu ringkasan --}}
     <section class="row">
+
+        {{-- Total Saldo --}}
         <div class="col-12 col-lg-3 col-md-6">
             <div class="card">
                 <div class="card-body px-4 py-4-5">
@@ -25,13 +34,16 @@
                         </div>
                         <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
                             <h6 class="text-muted font-semibold">Total Saldo</h6>
-                            <h6 class="font-extrabold mb-0">Rp {{ number_format($totalBalance, 0, ',', '.') }}</h6>
+                            <h6 class="font-extrabold mb-0 balance-value">
+                                Rp {{ number_format($totalBalance, 0, ',', '.') }}
+                            </h6>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        {{-- Pemasukan --}}
         <div class="col-12 col-lg-3 col-md-6">
             <div class="card">
                 <div class="card-body px-4 py-4-5">
@@ -43,13 +55,16 @@
                         </div>
                         <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
                             <h6 class="text-muted font-semibold">Pemasukan Bulan Ini</h6>
-                            <h6 class="font-extrabold mb-0 text-success">Rp {{ number_format($summary['income'], 0, ',', '.') }}</h6>
+                            <h6 class="font-extrabold mb-0 text-success balance-value">
+                                Rp {{ number_format($summary['income'], 0, ',', '.') }}
+                            </h6>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        {{-- Pengeluaran --}}
         <div class="col-12 col-lg-3 col-md-6">
             <div class="card">
                 <div class="card-body px-4 py-4-5">
@@ -61,13 +76,16 @@
                         </div>
                         <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
                             <h6 class="text-muted font-semibold">Pengeluaran Bulan Ini</h6>
-                            <h6 class="font-extrabold mb-0 text-danger">Rp {{ number_format($summary['expense'], 0, ',', '.') }}</h6>
+                            <h6 class="font-extrabold mb-0 text-danger balance-value">
+                                Rp {{ number_format($summary['expense'], 0, ',', '.') }}
+                            </h6>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        {{-- Selisih --}}
         <div class="col-12 col-lg-3 col-md-6">
             <div class="card">
                 <div class="card-body px-4 py-4-5">
@@ -79,7 +97,7 @@
                         </div>
                         <div class="col-md-8 col-lg-12 col-xl-12 col-xxl-7">
                             <h6 class="text-muted font-semibold">Selisih Bulan Ini</h6>
-                            <h6 class="font-extrabold mb-0 {{ $summary['balance'] >= 0 ? 'text-success' : 'text-danger' }}">
+                            <h6 class="font-extrabold mb-0 {{ $summary['balance'] >= 0 ? 'text-success' : 'text-danger' }} balance-value">
                                 Rp {{ number_format($summary['balance'], 0, ',', '.') }}
                             </h6>
                         </div>
@@ -87,30 +105,37 @@
                 </div>
             </div>
         </div>
+
     </section>
 
     {{-- Chart --}}
     <section class="row">
-        <div class="col-12 col-lg-8">
-            <div class="card">
+        <div class="col-12 col-lg-7"> {{-- Ubah dari 8 ke 7 agar tidak terlalu lebar --}}
+            <div class="card" style="height: 400px;"> {{-- Kunci tinggi kartu --}}
                 <div class="card-header">
                     <h4>Tren 6 Bulan Terakhir</h4>
                 </div>
                 <div class="card-body">
-                    <canvas id="trendChart" height="280"></canvas>
+                    {{-- Tambahkan kontainer dengan tinggi tetap --}}
+                    <div style="height: 280px; width: 100%;">
+                        <canvas id="trendChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-lg-4">
-            <div class="card">
+        <div class="col-12 col-lg-5"> {{-- Ubah dari 4 ke 5 --}}
+            <div class="card" style="height: 400px;"> {{-- Kunci tinggi kartu yang sama --}}
                 <div class="card-header">
                     <h4>Pengeluaran per Kategori</h4>
                 </div>
                 <div class="card-body">
                     @if (count($categoryData) > 0)
-                        <canvas id="categoryChart" height="220"></canvas>
-                        <div class="mt-3">
+                        {{-- Tambahkan kontainer dengan tinggi tetap --}}
+                        <div style="height: 200px; width: 100%;">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                        <div class="mt-3 overflow-auto" style="max-height: 100px;">
                             @foreach (array_slice($categoryData, 0, 5) as $cat)
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <div class="d-flex align-items-center gap-2">
@@ -122,9 +147,9 @@
                             @endforeach
                         </div>
                     @else
-                        <div class="text-center text-muted py-4">
+                        <div class="text-center text-muted py-5">
                             <i class="bi bi-pie-chart fs-1 d-block mb-2"></i>
-                            Belum ada pengeluaran bulan ini
+                            Belum ada pengeluaran
                         </div>
                     @endif
                 </div>
@@ -245,6 +270,7 @@ if (trendCtx) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: { legend: { position: 'top' } },
             scales: {
                 y: {
@@ -272,10 +298,43 @@ if (catCtx && categoryData.length > 0) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             cutout: '65%',
         }
     });
 }
+
+
+    let isHidden = localStorage.getItem('hideBalance') === 'true';
+
+    function applyBalanceState() {
+        const values = document.querySelectorAll('.balance-value');
+
+        values.forEach(el => {
+            if (!el.dataset.original) {
+                el.dataset.original = el.innerText;
+            }
+
+            el.innerText = isHidden ? 'Rp ******' : el.dataset.original;
+        });
+
+        const icon = document.querySelector('#toggleBalance i');
+        if (icon) {
+            icon.classList.toggle('bi-eye', !isHidden);
+            icon.classList.toggle('bi-eye-slash', isHidden);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        applyBalanceState();
+
+        document.getElementById('toggleBalance').addEventListener('click', function () {
+            isHidden = !isHidden;
+            localStorage.setItem('hideBalance', isHidden);
+            applyBalanceState();
+        });
+    });
+
 </script>
 @endpush

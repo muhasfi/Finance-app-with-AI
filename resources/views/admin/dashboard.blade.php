@@ -93,7 +93,7 @@
                                         @if ($user->isAdmin())
                                             <span class="badge bg-danger">Admin</span>
                                         @else
-                                            <span class="badge bg-light text-muted">User</span>
+                                            <span class="badge bg-light">User</span>
                                         @endif
                                         @if ($user->status === 'suspended')
                                             <span class="badge bg-warning text-dark">Suspended</span>

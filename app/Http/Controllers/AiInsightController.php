@@ -63,17 +63,27 @@ class AiInsightController extends Controller
         $user     = auth()->user();
         $month    = $request->integer('month', now()->month);
         $year     = $request->integer('year', now()->year);
-        $cacheKey = "ai_insight_{$user->id}_{$year}_{$month}";
-        $insight  = Cache::get($cacheKey);
 
-        if (! $insight) {
-            return response()->json(['ready' => false]);
+        $cacheKey      = "ai_insight_{$user->id}_{$year}_{$month}";
+        $errorCacheKey = "ai_insight_error_{$user->id}_{$year}_{$month}";
+
+        $insight = Cache::get($cacheKey);
+
+        if ($insight) {
+            return response()->json(['ready' => true, 'insight' => $insight]);
         }
 
-        return response()->json([
-            'ready'   => true,
-            'insight' => $insight,
-        ]);
+        $error = Cache::get($errorCacheKey);
+
+        if ($error) {
+            return response()->json([
+                'ready'   => false,
+                'failed'  => true,
+                'message' => $error['message'],
+            ]);
+        }
+
+        return response()->json(['ready' => false, 'failed' => false]);
     }
 
     /**

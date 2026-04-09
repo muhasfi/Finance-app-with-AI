@@ -68,6 +68,7 @@ class TransactionController extends Controller
      */
     public function store(StoreTransactionRequest $request)
     {
+        $this->authorize('create', Transaction::class);
         $this->service->create($request->validated(), $request->file('receipt'));
 
         return redirect()->route('transactions.index')
