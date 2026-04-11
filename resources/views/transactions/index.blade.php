@@ -79,7 +79,7 @@
         <div class="card-body">
             {{-- FIX UTAMA: tambah table-responsive --}}
             <div class="table-responsive">
-                <table class="table table-hover table-striped">
+                <table class="table table-hover table-striped" id="table1">
                     <thead>
                         <tr>
                             <th>Tanggal</th>
@@ -154,10 +154,6 @@
                 </table>
             </div>
             {{-- END table-responsive --}}
-
-            <div class="d-flex justify-content-end mt-3">
-                {{ $transactions->links() }}
-            </div>
         </div>
     </div>
 </div>

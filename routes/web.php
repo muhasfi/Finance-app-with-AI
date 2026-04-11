@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AiInsightController;
+use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\DashboardController;
@@ -40,25 +41,31 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ->where('path', '.*');
 
     Route::resource('accounts', AccountController::class)->except('show');
-
+    
     Route::get('/transfer',  [TransferController::class, 'create'])->name('transfer.create');
     Route::post('/transfer', [TransferController::class, 'store'])->name('transfer.store');
     
-
+    
     // Profil
     Route::get('/profile',    [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile',  [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::put('/password',   [ProfileController::class, 'updatePassword'])->name('password.update');
-
+    
     Route::get('/ai/chat',          [ChatbotController::class, 'index'])->name('ai.chat');
-    Route::post('/ai/chat/message', [ChatbotController::class, 'message'])->name('ai.chat.message');
+    Route::post('/ai/chat/message', [ChatbotController::class, 'message'])
+    ->middleware('throttle:ai-chat')
+    ->name('ai.chat.message');
     Route::post('/ai/chat/reset',   [ChatbotController::class, 'reset'])->name('ai.chat.reset');
-
+    
     Route::resource('recurring', RecurringPlanController::class)->except('show');
     Route::patch('recurring/{recurring}/toggle', [RecurringPlanController::class, 'toggle'])
-        ->name('recurring.toggle');
-
+    ->name('recurring.toggle');
+    
+// Budget per kategori
+    Route::resource('budgets', \App\Http\Controllers\BudgetController::class)->except('show');
+    Route::post('budgets/copy', [\App\Http\Controllers\BudgetController::class, 'copyFromLastMonth'])->name('budgets.copy');
+        
     // Import CSV
     Route::get('/import',          [ImportController::class, 'create'])->name('import.create');
     Route::post('/import/upload',  [ImportController::class, 'upload'])->name('import.upload');

@@ -27,16 +27,16 @@ class ChatbotController extends Controller
         ]);
 
         // Rate limit: 20 pesan per menit per user
-        $rateLimitKey = 'chatbot_rate_' . auth()->id();
-        $count        = (int) Cache::get($rateLimitKey, 0);
+        // $rateLimitKey = 'chatbot_rate_' . auth()->id();
+        // $count        = (int) Cache::get($rateLimitKey, 0);
 
-        if ($count >= 20) {
-            return response()->json([
-                'error' => 'Terlalu banyak pesan. Tunggu sebentar ya!',
-            ], 429);
-        }
+        // if ($count >= 20) {
+        //     return response()->json([
+        //         'error' => 'Terlalu banyak pesan. Tunggu sebentar ya!',
+        //     ], 429);
+        // }
 
-        Cache::put($rateLimitKey, $count + 1, now()->addMinute());
+        // Cache::put($rateLimitKey, $count + 1, now()->addMinute());
 
         try {
             $reply = $this->chatbot->reply(auth()->user(), $request->message);

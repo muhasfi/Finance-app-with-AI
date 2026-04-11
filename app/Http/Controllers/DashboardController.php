@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Budget;
 use App\Models\Transaction;
 use App\Services\TransactionService;
 use Illuminate\View\View;
@@ -28,9 +29,25 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // Budget overview untuk dashboard — max 4 yang paling kritis
+        $budgets = Budget::where('user_id', $user->id)
+            ->forMonth($month, $year)
+            ->active()
+            ->with('category:id,name,color,icon')
+            ->get()
+            ->map(function (Budget $b) {
+                $b->spent_amount = $b->spent();
+                $b->percentage   = $b->percentage();
+                $b->status       = $b->status();
+                return $b;
+            })
+            ->sortByDesc('percentage')
+            ->take(4);
+
         return view('dashboard.index', compact(
             'summary', 'accounts', 'totalBalance',
-            'trendData', 'categoryData', 'recentTransactions'
+            'trendData', 'categoryData', 'recentTransactions',
+            'budgets', 'month', 'year'
         ));
     }
 }

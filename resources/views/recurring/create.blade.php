@@ -151,7 +151,7 @@
                 </div>
                 <div class="card-body p-0">
                     <table class="table table-sm mb-0">
-                        <thead class="table-light">
+                        <thead>
                             <tr><th>Nama</th><th>Tipe</th><th>Frekuensi</th></tr>
                         </thead>
                         <tbody>

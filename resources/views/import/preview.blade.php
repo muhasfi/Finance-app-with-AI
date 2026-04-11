@@ -22,7 +22,7 @@
                 </div>
                 <div class="card-body p-0" style="overflow-x:auto">
                     <table class="table table-sm table-bordered mb-0">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 @foreach ($headers as $h)
                                     <th class="small">{{ $h }}</th>

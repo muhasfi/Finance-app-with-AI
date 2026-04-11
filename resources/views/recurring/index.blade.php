@@ -43,10 +43,12 @@
         @php $active = $plans->where('is_active', true); @endphp
         @if ($active->count())
             <h6 class="text-muted mb-2 mt-3">Aktif ({{ $active->count() }})</h6>
-            <div class="card mb-4">
-                <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
-                        <thead class="table-light">
+            <div class="card">
+                <div class="card-body">
+                <div class="table-responsive">
+                
+                    <table class="table table-hover table-striped" id="table1">
+                        <thead>
                             <tr>
                                 <th>Nama</th>
                                 <th>Rekening</th>
@@ -111,6 +113,7 @@
                             @endforeach
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
         @endif

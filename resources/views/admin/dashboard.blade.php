@@ -73,7 +73,7 @@
                     <a href="{{ route('admin.users.index') }}" class="btn btn-sm btn-light">Lihat semua</a>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover table-striped" id="table1">
                         <tbody>
                             @foreach ($recentUsers as $user)
                                 <tr>
@@ -114,7 +114,7 @@
                     <h5 class="mb-0">Aktivitas Terbaru</h5>
                 </div>
                 <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
+                    <table class="table table-hover table-striped" id="table1">
                         <thead><tr><th>User</th><th>Aksi</th><th>Waktu</th></tr></thead>
                         <tbody>
                             @forelse ($recentLogs as $log)

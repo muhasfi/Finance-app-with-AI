@@ -157,82 +157,133 @@
         </div>
     </section>
 
-    {{-- Rekening & Transaksi terbaru --}}
-    <section class="row">
-        {{-- Rekening aktif --}}
-        <div class="col-12 col-lg-4">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Rekening</h4>
-                    <a href="{{ route('accounts.index') }}" class="btn btn-sm btn-light">Lihat semua</a>
-                </div>
-                <div class="card-body">
-                    @forelse ($accounts as $account)
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="avatar avatar-sm rounded"
-                                     style="background:{{ $account->color }}20;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
-                                    <i class="{{ $account->icon }} fs-5" style="color:{{ $account->color }}"></i>
-                                </div>
-                                <div>
-                                    <p class="mb-0 fw-semibold small">{{ $account->name }}</p>
-                                    <small class="text-muted">{{ $account->type->label() }}</small>
+   {{-- Budget, Rekening & Transaksi terbaru --}}
+<section class="row">
+    {{-- Kolom kiri: Budget + Rekening --}}
+    <div class="col-12 col-lg-5 d-flex flex-column gap-3">
+
+        {{-- Budget Bulan Ini --}}
+        @if ($budgets->isNotEmpty())
+        <div class="card flex-fill">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Budget Bulan Ini</h4>
+                <a href="{{ route('budgets.index', ['month' => $month, 'year' => $year]) }}" class="btn btn-sm btn-light">
+                    Lihat semua
+                </a>
+            </div>
+            <div class="card-body">
+                @foreach ($budgets->take(5) as $budget)
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <div class="rounded p-1"
+                                style="background:{{ $budget->category->color }}20;width:28px;height:28px;display:flex;align-items:center;justify-content:center">
+                                <i class="{{ $budget->category->icon }}"
+                                style="color:{{ $budget->category->color }};font-size:12px"></i>
+                            </div>
+                            <div class="flex-fill">
+                                <div class="d-flex justify-content-between">
+                                    <small class="fw-semibold">
+                                        {{ $budget->category->name }}
+                                    </small>
+                                    <small class="text-{{ $budget->statusColor() }} fw-semibold">
+                                        {{ $budget->percentage }}%
+                                    </small>
                                 </div>
                             </div>
-                            <span class="fw-bold small {{ $account->balance >= 0 ? 'text-success' : 'text-danger' }}">
-                                Rp {{ number_format($account->balance, 0, ',', '.') }}
-                            </span>
                         </div>
-                    @empty
-                        <p class="text-muted text-center py-2">Belum ada rekening. <a href="{{ route('accounts.create') }}">Tambah sekarang</a></p>
-                    @endforelse
-                </div>
+                        <div class="progress" style="height:6px;border-radius:99px">
+                            <div class="progress-bar bg-{{ $budget->statusColor() }}"
+                                style="width:{{ min($budget->percentage, 100) }}%;border-radius:99px">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="text-muted" style="font-size:11px">
+                                Rp {{ number_format($budget->spent_amount, 0, ',', '.') }}
+                            </small>
+                            <small class="text-muted" style="font-size:11px">
+                                Rp {{ number_format($budget->amount, 0, ',', '.') }}
+                            </small>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Rekening aktif --}}
+        <div class="card flex-fill">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Rekening</h4>
+                <a href="{{ route('accounts.index') }}" class="btn btn-sm btn-light">Lihat semua</a>
+            </div>
+            <div class="card-body">
+                @forelse ($accounts->take(5) as $account)
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar avatar-sm rounded"
+                                 style="background:{{ $account->color }}20;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
+                                <i class="{{ $account->icon }} fs-5" style="color:{{ $account->color }}"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0 fw-semibold small">{{ $account->name }}</p>
+                                <small class="text-muted">{{ $account->type->label() }}</small>
+                            </div>
+                        </div>
+                        <span class="fw-bold small {{ $account->balance >= 0 ? 'text-success' : 'text-danger' }}">
+                            Rp {{ number_format($account->balance, 0, ',', '.') }}
+                        </span>
+                    </div>
+                @empty
+                    <p class="text-muted text-center py-2">Belum ada rekening. <a href="{{ route('accounts.create') }}">Tambah sekarang</a></p>
+                @endforelse
             </div>
         </div>
 
-        {{-- Transaksi terbaru --}}
-        <div class="col-12 col-lg-8">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Transaksi Terbaru</h4>
-                    <a href="{{ route('transactions.index') }}" class="btn btn-sm btn-light">Lihat semua</a>
-                </div>
-                <div class="card-body">
-                    <table class="table table-hover table-borderless">
-                        <tbody>
-                            @forelse ($recentTransactions as $tx)
-                                <tr>
-                                    <td width="40">
-                                        <div class="avatar avatar-sm rounded"
-                                             style="background:{{ $tx->category?->color ?? '#6b7280' }}20;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
-                                            <i class="{{ $tx->category?->icon ?? 'bi-tag' }} fs-5"
-                                               style="color:{{ $tx->category?->color ?? '#6b7280' }}"></i>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <p class="mb-0 fw-semibold small">{{ $tx->note ?? '-' }}</p>
-                                        <small class="text-muted">{{ $tx->category?->name ?? 'Tanpa kategori' }} &middot; {{ $tx->account->name }}</small>
-                                    </td>
-                                    <td class="text-end">
-                                        <p class="mb-0 fw-bold small {{ $tx->type->value === 'income' ? 'text-success' : ($tx->type->value === 'expense' ? 'text-danger' : 'text-info') }}">
-                                            {{ $tx->formatted_amount }}
-                                        </p>
-                                        <small class="text-muted">{{ $tx->date->format('d M Y') }}</small>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted py-4">
-                                        Belum ada transaksi. <a href="{{ route('transactions.create') }}">Tambah sekarang</a>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+    </div>
+
+    {{-- Kolom kanan: Transaksi terbaru --}}
+    <div class="col-12 col-lg-7">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Transaksi Terbaru</h4>
+                <a href="{{ route('transactions.index') }}" class="btn btn-sm btn-light">Lihat semua</a>
+            </div>
+            <div class="card-body">
+                <table class="table table-hover table-borderless">
+                    <tbody>
+                        @forelse ($recentTransactions->take(10) as $tx)
+                            <tr>
+                                <td width="40">
+                                    <div class="avatar avatar-sm rounded"
+                                         style="background:{{ $tx->category?->color ?? '#6b7280' }}20;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
+                                        <i class="{{ $tx->category?->icon ?? 'bi-tag' }} fs-5"
+                                           style="color:{{ $tx->category?->color ?? '#6b7280' }}"></i>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="mb-0 fw-semibold small">{{ $tx->note ?? '-' }}</p>
+                                    <small class="text-muted">{{ $tx->category?->name ?? 'Tanpa kategori' }} &middot; {{ $tx->account->name }}</small>
+                                </td>
+                                <td class="text-end">
+                                    <p class="mb-0 fw-bold small {{ $tx->type->value === 'income' ? 'text-success' : ($tx->type->value === 'expense' ? 'text-danger' : 'text-info') }}">
+                                        {{ $tx->formatted_amount }}
+                                    </p>
+                                    <small class="text-muted">{{ $tx->date->format('d M Y') }}</small>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">
+                                    Belum ada transaksi. <a href="{{ route('transactions.create') }}">Tambah sekarang</a>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
 </div>
 @endsection

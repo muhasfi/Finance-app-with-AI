@@ -83,6 +83,13 @@
                         <span>Transaksi Berulang</span>
                     </a>
                 </li>
+                
+                <li class="sidebar-item {{ request()->routeIs('budgets.*') ? 'active' : '' }}">
+                    <a href="{{ route('budgets.index') }}" class="sidebar-link">
+                        <i class="bi bi-pie-chart"></i>
+                        <span>Budget</span>
+                    </a>
+                </li>
 
                 <li class="sidebar-item {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                     <a href="{{ route('reports.index') }}" class="sidebar-link">

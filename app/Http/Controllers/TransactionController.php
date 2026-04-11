@@ -45,7 +45,7 @@ class TransactionController extends Controller
             $query->where('account_id', $request->account_id);
         }
 
-        $transactions = $query->paginate(20)->withQueryString();
+        $transactions = $query->paginate(25)->withQueryString();
         $accounts     = auth()->user()->activeAccounts()->get(['id', 'name']);
         $categories   = Category::forUser(auth()->id())->parentsOnly()->get(['id', 'name']);
 

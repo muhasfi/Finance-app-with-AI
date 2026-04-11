@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="page-heading">
-    <div class="page-title">
+    <div class="page-title mb-3">
         <div class="row align-items-center">
             <div class="col-12 col-md-6">
                 <h3>AI Insight Keuangan</h3>
