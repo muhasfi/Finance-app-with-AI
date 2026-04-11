@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\BillDueEvent;
 use App\Jobs\CategorizeTransactionJob;
 use App\Jobs\Generateinsightjob;
 use Illuminate\Foundation\Inspiring;
@@ -38,6 +39,22 @@ Schedule::call(function () {
     }
 })->dailyAt('07:00')->name('process-recurring-transactions');
 
+// ── Notifikasi tagihan jatuh tempo — setiap hari jam 08:00 ───────────────
+Schedule::call(function () {
+    // Tagihan hari ini
+    RecurringPlan::where('is_active', true)
+        ->whereDate('next_run_at', today())
+        ->with(['account.user', 'account'])
+        ->get()
+        ->each(fn($plan) => broadcast(new BillDueEvent($plan->account->user, $plan, true)));
+
+    // Tagihan besok (pengingat H-1)
+    RecurringPlan::where('is_active', true)
+        ->whereDate('next_run_at', today()->addDay())
+        ->with(['account.user', 'account'])
+        ->get()
+        ->each(fn($plan) => broadcast(new BillDueEvent($plan->account->user, $plan, false)));
+})->dailyAt('08:00')->name('notify-bill-due');
 
 // ── Auto-kategorisasi transaksi tanpa kategori (AI) ──────────────────────
 // Jalankan setiap 30 menit

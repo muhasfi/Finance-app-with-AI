@@ -2,8 +2,9 @@
 
 namespace App\Observers;
 
-use App\Models\Transaction;
+use App\Events\TransactionCreated;
 use App\Models\AuditLog;
+use App\Models\Transaction;
 
 class TransactionObserver
 {
@@ -12,10 +13,13 @@ class TransactionObserver
         $this->updateBalance($transaction);
 
         AuditLog::record(
-            'create',
-            'Menambahkan transaksi',
+            'transaction.created',
+            "Transaksi baru: {$transaction->type->label()} Rp " . number_format($transaction->amount, 0, ',', '.'),
             $transaction
         );
+
+        // Dispatch event agar CheckBudgetAfterTransaction listener bisa cek budget
+        TransactionCreated::dispatch($transaction);
     }
 
     public function updated(Transaction $transaction): void
@@ -29,11 +33,13 @@ class TransactionObserver
             }
         }
 
-        AuditLog::record(
-            'update',
-            'Mengubah transaksi',
-            $transaction
-        );
+        if ($transaction->wasChanged() && ! $transaction->wasChanged(['ai_categorized', 'ai_confidence', 'category_id'])) {
+            AuditLog::record(
+                'transaction.updated',
+                "Transaksi diperbarui: Rp " . number_format($transaction->amount, 0, ',', '.'),
+                $transaction
+            );
+        }
     }
 
     public function deleted(Transaction $transaction): void
@@ -41,8 +47,8 @@ class TransactionObserver
         $transaction->account->recalculateBalance();
 
         AuditLog::record(
-            'delete',
-            'Menghapus transaksi',
+            'transaction.deleted',
+            "Transaksi dihapus: {$transaction->type->label()} Rp " . number_format($transaction->amount, 0, ',', '.'),
             $transaction
         );
     }
@@ -50,12 +56,6 @@ class TransactionObserver
     public function restored(Transaction $transaction): void
     {
         $transaction->account->recalculateBalance();
-
-        AuditLog::record(
-            'restore',
-            'Restore transaksi',
-            $transaction
-        );
     }
 
     private function updateBalance(Transaction $transaction): void

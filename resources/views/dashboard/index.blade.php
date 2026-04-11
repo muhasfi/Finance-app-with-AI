@@ -289,6 +289,12 @@
 @endsection
 
 @push('scripts')
+{{-- 1. Load library dulu --}}
+    {{-- <script src="{{ asset('assets/static/js/pages/dashboard.js') }}"></script>
+    <script src="{{ asset('assets/extensions/apexcharts/apexcharts.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script> --}}
+
+    {{-- 2. Baru load dashboard.js yang menggunakan library di atas --}}
 <script>
 const trendData    = @json($trendData);
 const categoryData = @json($categoryData);

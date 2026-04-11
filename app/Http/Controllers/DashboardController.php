@@ -26,7 +26,7 @@ class DashboardController extends Controller
         $recentTransactions = Transaction::forUser($user->id)
             ->with(['account:id,name,color,icon', 'category:id,name,color,icon'])
             ->latest('date')->latest('created_at')
-            ->limit(5)
+            ->limit(10)
             ->get();
 
         // Budget overview untuk dashboard — max 4 yang paling kritis

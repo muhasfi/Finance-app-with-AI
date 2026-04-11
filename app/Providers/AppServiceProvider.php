@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\TransactionCreated;
+use App\Listeners\CheckBudgetAfterTransaction;
 use App\Models\Account;
 use App\Models\Transaction;
 use App\Observers\TransactionObserver;
@@ -9,6 +11,7 @@ use App\Policies\AccountPolicy;
 use App\Policies\TransactionPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -51,6 +54,12 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(20)
                 ->by(auth()->id() ?? $request->ip());
         });
+
+        // ── Event → Listener ─────────────────────────────────────────
+        Event::listen(
+            TransactionCreated::class,
+            CheckBudgetAfterTransaction::class,
+        );
 
         // Observer — auto-update balance saat transaksi berubah
         Transaction::observe(TransactionObserver::class);

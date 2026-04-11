@@ -14,25 +14,24 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
-
     Route::post('register', [RegisteredUserController::class, 'store']);
 
+    // ✅ Tambahkan GET untuk tampilkan form login
+    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+        ->name('login');
+    // ✅ Hapus duplikat, throttle tetap di sini
     Route::post('login', [AuthenticatedSessionController::class, 'store'])
-    ->middleware('throttle:login')
-    ->name('login');
+        ->middleware('throttle:login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
-
+    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
+        ->name('password.request');
+    // ✅ Hapus duplikat
     Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
-    ->middleware('throttle:forgot-password')
-    ->name('password.email');
-
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->middleware('throttle:forgot-password')
         ->name('password.email');
 
     Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
         ->name('password.reset');
-
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
 });

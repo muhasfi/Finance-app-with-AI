@@ -16,16 +16,45 @@
                     
                     {{-- Notifikasi --}}
                     <div class="nav-item dropdown me-3">
-                        <a class="nav-link active dropdown-toggle text-gray-600" href="#" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                        <a class="nav-link active dropdown-toggle text-gray-600 position-relative"
+                        href="#"
+                        data-bs-toggle="dropdown"
+                        data-bs-display="static"
+                        aria-expanded="false"
+                        onclick="loadNotifications()">
+
                             <i class='bi bi-bell bi-sub fs-4'></i>
-                            {{-- Opsional: Badge Notifikasi --}}
-                            <span class="badge badge-notification bg-danger">0</span>
+
+                            <!-- Badge tetap pakai ID lama -->
+                            <span id="notifBadge"
+                                class="badge badge-notification bg-danger position-absolute"
+                                style="top:0; right:0; font-size:12px; display:none;">
+                                0
+                            </span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-lg" aria-labelledby="dropdownMenuButton">
-                            <li><h6 class="dropdown-header">Notifikasi</h6></li>
-                            <li><p class="text-center py-2 mb-0">Tidak ada notifikasi baru</p></li>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg" style="width:340px;max-height:420px;overflow-y:auto">
+
+                            <!-- Header -->
+                            <li class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                                <h6 class="dropdown-header mb-0 p-0">Notifikasi</h6>
+                                <button class="btn btn-sm btn-link text-muted p-0 text-decoration-none"
+                                        onclick="markAllRead()" id="markAllBtn" style="display:none">
+                                    Tandai semua
+                                </button>
+                            </li>
+
+                            <!-- List tetap pakai ID lama -->
+                            <li id="notifList">
+                                <div class="text-center text-muted py-2 mb-0 small">
+                                    <i class="bi bi-bell-slash d-block fs-4 mb-1"></i>
+                                    Tidak ada notifikasi baru
+                                </div>
+                            </li>
+
                         </ul>
                     </div>
+                    
 
                     {{-- User Dropdown --}}
                     <div class="dropdown">

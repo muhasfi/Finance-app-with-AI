@@ -7,6 +7,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecurringPlanController;
 use App\Http\Controllers\ReportController;
@@ -52,29 +53,36 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::put('/password',   [ProfileController::class, 'updatePassword'])->name('password.update');
     
-    Route::get('/ai/chat',          [ChatbotController::class, 'index'])->name('ai.chat');
-    Route::post('/ai/chat/message', [ChatbotController::class, 'message'])
-    ->middleware('throttle:ai-chat')
-    ->name('ai.chat.message');
-    Route::post('/ai/chat/reset',   [ChatbotController::class, 'reset'])->name('ai.chat.reset');
     
     Route::resource('recurring', RecurringPlanController::class)->except('show');
     Route::patch('recurring/{recurring}/toggle', [RecurringPlanController::class, 'toggle'])
     ->name('recurring.toggle');
     
-// Budget per kategori
+    // Budget per kategori
     Route::resource('budgets', \App\Http\Controllers\BudgetController::class)->except('show');
     Route::post('budgets/copy', [\App\Http\Controllers\BudgetController::class, 'copyFromLastMonth'])->name('budgets.copy');
-        
+    
     // Import CSV
     Route::get('/import',          [ImportController::class, 'create'])->name('import.create');
     Route::post('/import/upload',  [ImportController::class, 'upload'])->name('import.upload');
     Route::post('/import/confirm', [ImportController::class, 'confirm'])->name('import.confirm');
-
+    
     // Laporan & Export
     Route::get('/reports',        [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
-
+    
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/',              [NotificationController::class, 'index'])->name('index');
+        Route::post('read-all',      [NotificationController::class, 'markAllAsRead'])->name('read-all');
+        Route::post('{id}/read',     [NotificationController::class, 'markAsRead'])->name('read');
+        Route::delete('{id}',        [NotificationController::class, 'destroy'])->name('destroy');
+    });
+        
+    Route::get('/ai/chat',          [ChatbotController::class, 'index'])->name('ai.chat');
+    Route::post('/ai/chat/message', [ChatbotController::class, 'message'])
+    ->middleware('throttle:ai-chat')
+    ->name('ai.chat.message');
+    Route::post('/ai/chat/reset',   [ChatbotController::class, 'reset'])->name('ai.chat.reset');
     // Insight keuangan bulanan
     Route::get('/ai/insights',         [AiInsightController::class, 'index'])->name('ai.insights');
     Route::post('/ai/insights/generate',[AiInsightController::class, 'generate'])->name('ai.insights.generate');
