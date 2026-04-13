@@ -13,13 +13,34 @@ return new class extends Migration
     {
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+
+            $table->uuid('user_id')->nullable();
+            $table->string('action');
+            $table->string('model_type')->nullable();
+            $table->uuid('model_id')->nullable();
+
+            $table->json('old_values')->nullable();
+            $table->json('new_values')->nullable();
+
+            $table->text('description')->nullable();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+
+            $table->timestamp('created_at')->useCurrent();
+
+            // Index
+            $table->index(['user_id', 'created_at']);
+            $table->index(['model_type', 'model_id']);
+            $table->index('action');
+
+            // Foreign Key
+            $table->foreign('user_id')
+                ->references('id')
+                ->on('users')
+                ->nullOnDelete();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('audit_logs');

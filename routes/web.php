@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AiInsightController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatbotController;
@@ -13,21 +14,8 @@ use App\Http\Controllers\RecurringPlanController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransferController;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
-
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
-
-// Route::middleware('auth')->group(function () {
-//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-// });
 
 Route::get('/', fn() => redirect()->route('dashboard'));
 
@@ -70,7 +58,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Laporan & Export
     Route::get('/reports',        [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
+    Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
     
+    // Notifikasi (AJAX)
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/',              [NotificationController::class, 'index'])->name('index');
         Route::post('read-all',      [NotificationController::class, 'markAllAsRead'])->name('read-all');
@@ -83,6 +73,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ->middleware('throttle:ai-chat')
     ->name('ai.chat.message');
     Route::post('/ai/chat/reset',   [ChatbotController::class, 'reset'])->name('ai.chat.reset');
+
     // Insight keuangan bulanan
     Route::get('/ai/insights',         [AiInsightController::class, 'index'])->name('ai.insights');
     Route::post('/ai/insights/generate',[AiInsightController::class, 'generate'])->name('ai.insights.generate');
@@ -114,7 +105,7 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::get('audit-logs', [\App\Http\Controllers\Admin\AuditLogController::class, 'index'])
             ->name('audit-logs.index');
 
-    });
+});
 
 
 require __DIR__.'/auth.php';

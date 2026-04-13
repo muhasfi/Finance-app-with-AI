@@ -87,4 +87,59 @@ class ReportController extends Controller
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
     }
+
+    /**
+     * Export PDF — butuh: composer require barryvdh/laravel-dompdf
+     */
+    public function exportPdf(Request $request)
+    {
+        $request->validate([
+            'from'        => ['required', 'date'],
+            'to'          => ['required', 'date', 'after_or_equal:from'],
+            'type'        => ['nullable', 'in:income,expense,transfer'],
+            'account_id'  => ['nullable', 'uuid'],
+            'category_id' => ['nullable', 'uuid'],
+        ]);
+
+        $transactions = $this->getFilteredTransactions($request);
+        $user         = auth()->user();
+        $income       = $transactions->where('type', 'income')->sum('amount_base');
+        $expense      = $transactions->where('type', 'expense')->sum('amount_base');
+        $balance      = $income - $expense;
+        $fromDate     = \Carbon\Carbon::parse($request->from)->translatedFormat('d F Y');
+        $toDate       = \Carbon\Carbon::parse($request->to)->translatedFormat('d F Y');
+
+        $byCategory = $transactions
+            ->where('type', 'expense')
+            ->groupBy('category_id')
+            ->map(fn($g) => [
+                'name'  => $g->first()->category?->name ?? 'Tanpa Kategori',
+                'color' => $g->first()->category?->color ?? '#6b7280',
+                'total' => $g->sum('amount_base'),
+            ])
+            ->sortByDesc('total')
+            ->values();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.pdf', compact(
+            'transactions', 'user',
+            'income', 'expense', 'balance',
+            'fromDate', 'toDate', 'byCategory'
+        ))->setPaper('a4', 'portrait');
+
+        $filename = 'laporan_' . $request->from . '_sd_' . $request->to . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    private function getFilteredTransactions(Request $request)
+    {
+        return Transaction::forUser(auth()->id())
+            ->with(['account:id,name', 'category:id,name,color'])
+            ->whereBetween('date', [$request->from, $request->to])
+            ->when($request->filled('type'),        fn($q) => $q->where('type', $request->type))
+            ->when($request->filled('account_id'),  fn($q) => $q->where('account_id', $request->account_id))
+            ->when($request->filled('category_id'), fn($q) => $q->where('category_id', $request->category_id))
+            ->latest('date')
+            ->get();
+    }
 }

@@ -3,12 +3,14 @@
 use App\Events\BillDueEvent;
 use App\Jobs\CategorizeTransactionJob;
 use App\Jobs\Generateinsightjob;
+use App\Mail\MonthlyReportMail;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use App\Models\RecurringPlan;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\TransactionService;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -55,6 +57,25 @@ Schedule::call(function () {
         ->get()
         ->each(fn($plan) => broadcast(new BillDueEvent($plan->account->user, $plan, false)));
 })->dailyAt('08:00')->name('notify-bill-due');
+
+// ── Email laporan bulanan — setiap tanggal 2, jam 09:00 ───────────────────
+// Tanggal 2 agar semua transaksi bulan lalu sudah masuk
+Schedule::call(function () {
+    $prevMonth = now()->subMonth();
+
+    User::active()
+        ->whereNotNull('email_verified_at')
+        ->chunk(50, function ($users) use ($prevMonth) {
+            foreach ($users as $user) {
+                Mail::to($user->email)
+                    ->queue(new MonthlyReportMail(
+                        $user,
+                        $prevMonth->month,
+                        $prevMonth->year
+                    ));
+            }
+        });
+})->monthlyOn(2, '09:00')->name('send-monthly-report-email');
 
 // ── Auto-kategorisasi transaksi tanpa kategori (AI) ──────────────────────
 // Jalankan setiap 30 menit

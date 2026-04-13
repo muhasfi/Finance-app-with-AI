@@ -54,7 +54,13 @@
                                 <div class="form-text text-warning">
                                     <i class="bi bi-exclamation-triangle me-1"></i>
                                     Email belum diverifikasi.
-                                    <a href="{{ route('verification.send') }}" class="text-warning fw-semibold">Kirim ulang verifikasi</a>
+                                    <form method="POST" action="{{ route('verification.send') }}" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-link p-0 text-warning fw-semibold" 
+                                                style="vertical-align: baseline; text-decoration: underline;">
+                                            Kirim ulang verifikasi
+                                        </button>
+                                    </form>
                                 </div>
                             @endif
                         </div>

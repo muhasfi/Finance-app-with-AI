@@ -13,23 +13,19 @@ return new class extends Migration
     {
         Schema::create('budgets', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('category_id')->constrained()->cascadeOnDelete();
- 
-            $table->decimal('amount', 15, 2);       // batas anggaran
-            $table->unsignedTinyInteger('month');   // 1-12
+            $table->uuid('user_id');
+            $table->uuid('category_id');
+            $table->decimal('amount', 15, 2);
+            $table->unsignedTinyInteger('month');
             $table->unsignedSmallInteger('year');
- 
-            // Alert threshold — kirim notif saat pengeluaran mencapai X% dari budget
-            $table->unsignedTinyInteger('alert_threshold')->default(80); // 80%
- 
+            $table->unsignedTinyInteger('alert_threshold')->default(80);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
  
-            // Satu kategori hanya boleh punya satu budget per bulan per user
-            $table->unique(['user_id', 'category_id', 'month', 'year']);
- 
-            $table->index(['user_id', 'month', 'year']);
+            $table->foreign('user_id', 'budgets_user_fk')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreign('category_id', 'budgets_category_fk')->references('id')->on('categories')->cascadeOnDelete();
+            $table->unique(['user_id', 'category_id', 'month', 'year'], 'budgets_unique');
+            $table->index(['user_id', 'month', 'year'], 'budgets_index');
         });
     }
  

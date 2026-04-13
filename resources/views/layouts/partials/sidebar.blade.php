@@ -91,6 +91,8 @@
                     </a>
                 </li>
 
+                <li class="sidebar-title">Laporan</li>
+
                 <li class="sidebar-item {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                     <a href="{{ route('reports.index') }}" class="sidebar-link">
                         <i class="bi bi-file-earmark-bar-graph"></i>
