@@ -3,12 +3,17 @@
 
 @push('styles')
 <style>
+    /* ── CSS Variables override untuk Fina ── */
+    /* Semua warna pakai var() Mazer agar ikut dark/light mode */
+
     /* ── Chat Layout ── */
     .chat-wrapper {
         display: flex;
         gap: 1.25rem;
-        height: calc(100vh - 200px);
+        height: calc(100vh - 210px);
         min-height: 520px;
+        display: flex;
+        height: 100vh;
     }
 
     /* ── Chat Utama ── */
@@ -18,18 +23,19 @@
         flex-direction: column;
         border-radius: 16px;
         overflow: hidden;
-        border: 1px solid rgba(0,0,0,.07);
-        box-shadow: 0 4px 24px rgba(0,0,0,.06);
+        border: 1px solid var(--bs-border-color);
+        box-shadow: 0 4px 24px rgba(0,0,0,.08);
+        background: var(--bs-card-bg);
     }
 
-    /* Header */
+    /* ── Header ── */
     .chat-header {
         display: flex;
         align-items: center;
         gap: 12px;
         padding: 14px 20px;
-        background: #fff;
-        border-bottom: 1px solid #f0f0f0;
+        background: var(--bs-card-bg);
+        border-bottom: 1px solid var(--bs-border-color);
         flex-shrink: 0;
     }
     .fina-avatar {
@@ -42,17 +48,18 @@
         justify-content: center;
         font-size: 20px;
         flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(99,102,241,.3);
+        box-shadow: 0 4px 12px rgba(99,102,241,.35);
+        color: #fff;
     }
     .fina-info .fina-name {
         font-weight: 600;
         font-size: .925rem;
-        color: #1a1a2e;
+        color: var(--bs-body-color);
         line-height: 1.2;
     }
     .fina-info .fina-desc {
         font-size: .75rem;
-        color: #6b7280;
+        color: var(--bs-secondary-color, #6b7280);
         margin-top: 1px;
     }
     .fina-status {
@@ -73,24 +80,27 @@
     }
     @keyframes pulse-dot {
         0%,100% { opacity: 1; }
-        50% { opacity: .4; }
+        50%      { opacity: .4; }
     }
 
-    /* Messages area */
+    /* ── Messages area ── */
     .chat-messages {
         flex: 1;
         overflow-y: auto;
         padding: 20px;
-        background: #f8f9fc;
+        background: var(--bs-body-bg);
         display: flex;
         flex-direction: column;
         gap: 14px;
         scroll-behavior: smooth;
     }
     .chat-messages::-webkit-scrollbar { width: 4px; }
-    .chat-messages::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: var(--bs-border-color);
+        border-radius: 4px;
+    }
 
-    /* Bubble */
+    /* ── Bubble ── */
     .msg {
         display: flex;
         gap: 8px;
@@ -114,21 +124,29 @@
         flex-shrink: 0;
         margin-top: 2px;
     }
-    .msg-avatar-sm.ai-av  { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
-    .msg-avatar-sm.usr-av { background: #e0e7ff; color: #6366f1; font-weight: 700; font-size: 11px; }
+    .msg-avatar-sm.ai-av  {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff;
+    }
+    .msg-avatar-sm.usr-av {
+        background: rgba(99,102,241,.15);
+        color: #6366f1;
+        font-weight: 700;
+        font-size: 11px;
+    }
 
     .msg-bubble {
         padding: 10px 14px;
         border-radius: 14px;
         font-size: .855rem;
         line-height: 1.65;
-        color: #1f2937;
+        color: var(--bs-body-color);
     }
     .msg.ai-msg .msg-bubble {
-        background: #fff;
-        border: 1px solid #e5e7eb;
+        background: var(--bs-card-bg);
+        border: 1px solid var(--bs-border-color);
         border-bottom-left-radius: 4px;
-        box-shadow: 0 1px 4px rgba(0,0,0,.05);
+        box-shadow: 0 1px 4px rgba(0,0,0,.06);
     }
     .msg.user-msg .msg-bubble {
         background: linear-gradient(135deg, #6366f1, #7c3aed);
@@ -136,14 +154,14 @@
         border-bottom-right-radius: 4px;
     }
 
-    /* Typing indicator */
+    /* ── Typing indicator ── */
     .typing-indicator {
         display: flex;
         gap: 4px;
         align-items: center;
         padding: 12px 16px;
-        background: #fff;
-        border: 1px solid #e5e7eb;
+        background: var(--bs-card-bg);
+        border: 1px solid var(--bs-border-color);
         border-radius: 14px;
         border-bottom-left-radius: 4px;
         width: fit-content;
@@ -151,7 +169,7 @@
     .typing-dot {
         width: 7px;
         height: 7px;
-        background: #9ca3af;
+        background: var(--bs-secondary-color, #9ca3af);
         border-radius: 50%;
         animation: bounce 1.2s infinite;
     }
@@ -159,14 +177,14 @@
     .typing-dot:nth-child(3) { animation-delay: .4s; }
     @keyframes bounce {
         0%,60%,100% { transform: translateY(0); }
-        30% { transform: translateY(-6px); }
+        30%          { transform: translateY(-6px); }
     }
 
-    /* Chat input */
+    /* ── Chat input area ── */
     .chat-input-area {
         padding: 14px 16px;
-        background: #fff;
-        border-top: 1px solid #f0f0f0;
+        background: var(--bs-card-bg);
+        border-top: 1px solid var(--bs-border-color);
         flex-shrink: 0;
     }
     .chat-input-row {
@@ -176,7 +194,7 @@
     }
     .chat-input {
         flex: 1;
-        border: 1.5px solid #e5e7eb;
+        border: 1.5px solid var(--bs-border-color);
         border-radius: 12px;
         padding: 10px 14px;
         font-size: .875rem;
@@ -184,19 +202,24 @@
         min-height: 44px;
         max-height: 120px;
         outline: none;
-        transition: border-color .15s;
+        transition: border-color .15s, background .15s;
         font-family: inherit;
-        color: #1f2937;
-        background: #f9fafb;
+        color: var(--bs-body-color);
+        background: var(--bs-body-bg);
     }
-    .chat-input:focus { border-color: #6366f1; background: #fff; }
-    .chat-input::placeholder { color: #9ca3af; }
+    .chat-input:focus {
+        border-color: #6366f1;
+        background: var(--bs-card-bg);
+        box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+    }
+    .chat-input::placeholder { color: var(--bs-secondary-color, #9ca3af); }
+
     .btn-send {
         width: 44px;
         height: 44px;
         border-radius: 12px;
         background: linear-gradient(135deg, #6366f1, #7c3aed);
-        border: none;
+        /* border: none; */
         color: #fff;
         display: flex;
         align-items: center;
@@ -205,9 +228,9 @@
         transition: opacity .15s, transform .1s;
         flex-shrink: 0;
     }
-    .btn-send:hover  { opacity: .9; }
+    .btn-send:hover  { opacity: .88; }
     .btn-send:active { transform: scale(.95); }
-    .btn-send:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-send:disabled { opacity: .45; cursor: not-allowed; }
 
     /* ── Sidebar ── */
     .chat-sidebar {
@@ -216,63 +239,67 @@
         display: flex;
         flex-direction: column;
         gap: 1rem;
+
+        height: 100%;        /* ikut tinggi parent */
+        overflow-y: auto;    /* scroll aktif */
     }
 
+    /* Pakai .card Mazer asli untuk sidebar */
     .sidebar-card {
-        background: #fff;
+        background: var(--bs-card-bg);
         border-radius: 16px;
-        border: 1px solid rgba(0,0,0,.07);
-        box-shadow: 0 2px 10px rgba(0,0,0,.04);
+        border: 1px solid var(--bs-border-color);
+        box-shadow: 0 2px 10px rgba(0,0,0,.05);
         overflow: hidden;
     }
     .sidebar-card-header {
         padding: 13px 16px 11px;
         font-size: .8rem;
         font-weight: 600;
-        color: #374151;
-        border-bottom: 1px solid #f3f4f6;
+        color: var(--bs-body-color);
+        border-bottom: 1px solid var(--bs-border-color);
         display: flex;
         align-items: center;
         gap: 7px;
     }
     .sidebar-card-header i { color: #6366f1; }
 
-    /* Quick questions */
+    /* ── Quick questions ── */
     .quick-list { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
     .quick-btn {
         width: 100%;
         text-align: left;
-        background: #f8f9fc;
-        border: 1px solid #e9eaf0;
-        border-radius: 9px;
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        /* border-radius: 9px; */
         padding: 8px 11px;
-        font-size: .775rem;
-        color: #4b5563;
+        /* font-size: .775rem; */
+        color: var(--bs-body-color);
         cursor: pointer;
         transition: all .15s;
         line-height: 1.4;
     }
     .quick-btn:hover {
-        background: #eef0ff;
-        border-color: #c7d2fe;
-        color: #4338ca;
+        background: rgba(99,102,241,.1);
+        border-color: rgba(99,102,241,.35);
+        color: #6366f1;
     }
 
-    /* Tip info */
+    /* ── Tip info ── */
     .sidebar-tip {
         padding: 12px 14px;
         font-size: .75rem;
-        color: #6b7280;
+        color: var(--bs-secondary-color, #6b7280);
         line-height: 1.6;
     }
-    .sidebar-tip strong { color: #374151; }
+    .sidebar-tip strong { color: var(--bs-body-color); }
 
-    /* Rate limit bar */
+    /* ── Rate limit bar ── */
     .rate-info {
         padding: 10px 14px;
         font-size: .72rem;
-        color: #9ca3af;
-        border-top: 1px solid #f3f4f6;
+        color: var(--bs-secondary-color, #9ca3af);
+        border-top: 1px solid var(--bs-border-color);
         display: flex;
         align-items: center;
         gap: 6px;
@@ -280,7 +307,7 @@
     .rate-bar {
         flex: 1;
         height: 3px;
-        background: #f3f4f6;
+        background: var(--bs-border-color);
         border-radius: 99px;
         overflow: hidden;
     }
@@ -291,12 +318,12 @@
         transition: width .3s;
     }
 
-    /* Error toast */
+    /* ── Error toast ── */
     .chat-error {
         display: none;
         padding: 8px 13px;
-        background: #fef2f2;
-        border: 1px solid #fecaca;
+        background: rgba(220,38,38,.08);
+        border: 1px solid rgba(220,38,38,.25);
         border-radius: 8px;
         font-size: .775rem;
         color: #dc2626;
@@ -306,11 +333,28 @@
     }
     .chat-error.show { display: flex; }
 
-    @media (max-width: 768px) {
-        .chat-wrapper { flex-direction: column; height: auto; }
-        .chat-card    { height: 60vh; }
-        .chat-sidebar { width: 100%; }
+    /* ── Char + hint text ── */
+    .chat-hint {
+        font-size: .7rem;
+        color: var(--bs-secondary-color, #9ca3af);
     }
+
+    @media (max-width: 768px) {
+    .chat-wrapper { 
+        flex-direction: column; 
+        height: auto; 
+    }
+
+    .chat-card { 
+        height: 60vh; 
+    }
+
+    .chat-sidebar { 
+        width: 100%;
+        max-height: 50vh;  /* biar tidak kepanjangan */
+        overflow-y: auto;
+    }
+}
 </style>
 @endpush
 
@@ -320,10 +364,10 @@
         <div class="row align-items-center">
             <div class="col-12 col-md-8">
                 <h3 class="d-flex align-items-center gap-2">
-                    <span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+                    <a>
                         Tanya Fina
-                    </span>
-                    <span class="badge rounded-pill" style="background:#eef0ff;color:#6366f1;font-size:.7rem;font-weight:600;-webkit-text-fill-color:#6366f1;">AI</span>
+                    </a>
+                    <span class="badge rounded-pill" style="background:rgba(99,102,241,.15);color:#6366f1;font-size:.7rem;font-weight:700;-webkit-text-fill-color:#6366f1;">AI</span>
                 </h3>
                 <p class="text-subtitle text-muted">Asisten keuangan pribadi yang memahami data transaksi Anda</p>
             </div>
@@ -394,8 +438,8 @@
                     </button>
                 </div>
                 <div class="d-flex justify-content-between mt-1 px-1">
-                    <span class="text-muted" style="font-size:.7rem">Enter untuk kirim · Shift+Enter baris baru</span>
-                    <span class="text-muted" id="charCount" style="font-size:.7rem">0/500</span>
+                    <span class="chat-hint">Enter untuk kirim · Shift+Enter baris baru</span>
+                    <span class="chat-hint" id="charCount">0/500</span>
                 </div>
             </div>
         </div>
@@ -421,7 +465,7 @@
                     ];
                     @endphp
                     @foreach($quickQuestions as $q)
-                    <button class="quick-btn" onclick="fillQuestion(this)">{{ $q }}</button>
+                    <button class="quick-btn" style="border-radius: 12px; font-size: .775rem;" onclick="fillQuestion(this)">{{ $q }}</button>
                     @endforeach
                 </div>
             </div>

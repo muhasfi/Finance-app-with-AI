@@ -27,7 +27,7 @@ Route::prefix('auth')->group(function () {
 });
 
 // ── 2FA verification (pakai temp_token) ──────────────────────────────────
-Route::middleware('auth:sanctum')->post('auth/2fa/verify', [AuthController::class, 'verifyTwoFactor']);
+// Route::middleware('auth:sanctum')->post('auth/2fa/verify', [AuthController::class, 'verifyTwoFactor']);
 
 // ── Protected routes (butuh Bearer token) ────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
