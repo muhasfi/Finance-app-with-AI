@@ -22,8 +22,8 @@ class TransactionResource extends JsonResource
             'note'           => $this->note,
             'tags'           => $this->tags ?? [],
             'receipt_url'    => $this->receipt_path
-                                 ? asset('storage/' . $this->receipt_path)
-                                 : null,
+                            ? route('receipt', ['path' => $this->receipt_path])
+                            : null,
             'ai_categorized' => $this->ai_categorized,
             'ai_confidence'  => $this->ai_confidence,
 

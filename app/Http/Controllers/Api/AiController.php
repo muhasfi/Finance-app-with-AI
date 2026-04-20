@@ -74,22 +74,25 @@ class AiController extends Controller
         $year  = (int) $request->get('year',  now()->year);
         $user  = $request->user();
 
-        // Cek cache dulu
         $cacheKey = "ai_insight_{$user->id}_{$year}_{$month}";
         $cached   = \Illuminate\Support\Facades\Cache::get($cacheKey);
 
         if ($cached) {
             return $this->success([
-                'insight'  => $cached,
-                'cached'   => true,
-                'month'    => $month,
-                'year'     => $year,
+                'insight' => $cached,
+                'cached'  => true,
+                'month'   => $month,
+                'year'    => $year,
             ]);
         }
 
-        // Generate baru
         try {
-            $insightData = $this->insight->generate($user, $month, $year);
+            // Panggil method yang benar sesuai InsightService
+            $insightData = [
+                'summary'   => $this->insight->monthlySummary($user, $month, $year),
+                'tips'      => $this->insight->savingTips($user),
+                'anomalies' => $this->insight->detectAnomalies($user),
+            ];
 
             \Illuminate\Support\Facades\Cache::put($cacheKey, $insightData, now()->addHours(24));
 

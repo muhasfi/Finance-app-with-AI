@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BudgetController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ImportController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\RecurringPlanController;
 use App\Http\Controllers\Api\ReportController;
@@ -36,6 +37,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('logout',          [AuthController::class, 'logout']);
         Route::post('logout-all',      [AuthController::class, 'logoutAll']);
+        Route::post('email/resend',    [AuthController::class, 'resendVerification']);
+        Route::get('email/status',     [AuthController::class, 'emailVerificationStatus']);
         Route::get('me',               [AuthController::class, 'me']);
         Route::put('me',               [AuthController::class, 'updateProfile']);
         Route::put('me/password',      [AuthController::class, 'changePassword']);
@@ -104,6 +107,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('trend',      [ReportController::class, 'trend']);
         Route::get('range',      [ReportController::class, 'range']);
         Route::get('comparison', [ReportController::class, 'comparison']);
+        Route::get('filterMeta', [ReportController::class, 'filterMeta']);
+        Route::get('exportCsv', [ReportController::class, 'exportCsv']);
+        Route::get('exportPdf', [ReportController::class, 'exportPdf']);
     });
 
     // Notifikasi
@@ -123,4 +129,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('insights',           [AiController::class, 'insights']);
         Route::post('insights/generate', [AiController::class, 'generateInsight']);
     });
+    Route::prefix('import')->group(function () {
+        Route::post('upload', [ImportController::class, 'upload']);
+    });
+
+    Route::get('/receipt/{path}', [TransactionController::class, 'img'])->name('receipt');
 });

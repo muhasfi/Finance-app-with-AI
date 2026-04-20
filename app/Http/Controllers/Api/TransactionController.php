@@ -10,6 +10,7 @@ use App\Services\TransactionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class TransactionController extends Controller
 {
@@ -74,7 +75,7 @@ class TransactionController extends Controller
     {
         $data = $request->validate([
             'account_id'  => [
-                'required', 'uuid',
+                'required', 'uuid', 
                 Rule::exists('accounts', 'id')->where('user_id', $request->user()->id),
             ],
             'category_id' => [
@@ -83,17 +84,18 @@ class TransactionController extends Controller
                     $q->whereNull('user_id')->orWhere('user_id', $request->user()->id)
                 ),
             ],
-            'type'   => ['required', 'in:income,expense'],
-            'amount' => ['required', 'numeric', 'min:1'],
-            'date'   => ['required', 'date', 'before_or_equal:today'],
-            'note'   => ['nullable', 'string', 'max:500'],
-            'tags'   => ['nullable', 'array'],
-            'tags.*' => ['string', 'max:30'],
+            'type'    => ['required', 'in:income,expense'],
+            'amount'  => ['required', 'numeric', 'min:1'],
+            'date'    => ['required', 'date', 'before_or_equal:today'],
+            'note'    => ['nullable', 'string', 'max:500'],
+            'tags'    => ['nullable', 'array'],
+            'tags.*'  => ['string', 'max:30'],
+            'receipt' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
-
-        $transaction = $this->service->create($data);
+    
+        $transaction = $this->service->create($data, $request->file('receipt'));
         $transaction->load(['account:id,name,color,icon', 'category:id,name,color,icon']);
-
+    
         return $this->created(new TransactionResource($transaction), 'Transaksi berhasil ditambahkan.');
     }
 
@@ -104,7 +106,7 @@ class TransactionController extends Controller
     {
         $transaction = Transaction::forUser($request->user()->id)->find($id);
         if (! $transaction) return $this->notFound();
-
+    
         $data = $request->validate([
             'account_id'  => [
                 'sometimes', 'uuid',
@@ -116,16 +118,17 @@ class TransactionController extends Controller
                     $q->whereNull('user_id')->orWhere('user_id', $request->user()->id)
                 ),
             ],
-            'type'   => ['sometimes', 'in:income,expense'],
-            'amount' => ['sometimes', 'numeric', 'min:1'],
-            'date'   => ['sometimes', 'date', 'before_or_equal:today'],
-            'note'   => ['nullable', 'string', 'max:500'],
-            'tags'   => ['nullable', 'array'],
+            'type'    => ['sometimes', 'in:income,expense'],
+            'amount'  => ['sometimes', 'numeric', 'min:1'],
+            'date'    => ['sometimes', 'date', 'before_or_equal:today'],
+            'note'    => ['nullable', 'string', 'max:500'],
+            'tags'    => ['nullable', 'array'],
+            'receipt' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'], // ← tambahkan ini
         ]);
-
-        $transaction = $this->service->update($transaction, $data);
+    
+        $transaction = $this->service->update($transaction, $data, $request->file('receipt')); // ← teruskan file
         $transaction->load(['account:id,name,color,icon', 'category:id,name,color,icon']);
-
+    
         return $this->success(new TransactionResource($transaction), 'Transaksi berhasil diperbarui.');
     }
 
@@ -185,5 +188,15 @@ class TransactionController extends Controller
             ...$summary,
             'by_category' => $this->service->expenseByCategory($request->user()->id, $month, $year),
         ]);
+    }
+    public function img(string $path)
+    {
+        if (!Storage::disk('private')->exists($path)) {
+            abort(404);
+        }
+    
+        return response()->file(
+            Storage::disk('private')->path($path)
+        );
     }
 }

@@ -58,6 +58,12 @@ class ChatbotService
         return $reply;
     }
 
+    public function chat(User $user, string $message, string $conversationId): string
+    {
+
+        return $this->reply($user, $message);
+    }
+
     /**
      * Reset riwayat percakapan.
      */

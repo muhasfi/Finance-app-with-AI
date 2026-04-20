@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Auth\Events\Registered;
 
 class AuthController extends Controller
 {
@@ -221,5 +222,21 @@ class AuthController extends Controller
         $request->user()->tokens()->where('id', $tokenId)->delete();
 
         return $this->success(null, 'Perangkat berhasil dicabut aksesnya.');
+    }
+
+    public function resendVerification(Request $request): JsonResponse
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return $this->success(null, 'Email sudah terverifikasi.');
+        }
+        $request->user()->sendEmailVerificationNotification();
+        return $this->success(null, 'Email verifikasi telah dikirim.');
+    }
+
+    public function emailVerificationStatus(Request $request): JsonResponse
+    {
+        return $this->success([
+            'email_verified' => $request->user()->hasVerifiedEmail(),
+        ]);
     }
 }

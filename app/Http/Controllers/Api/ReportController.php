@@ -125,4 +125,126 @@ class ReportController extends Controller
             'expense_change_pct' => $expenseChange,
         ]);
     }
+
+    public function filterMeta(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        return $this->success([
+            'accounts'   => $user->activeAccounts()->get(['id', 'name']),
+            'categories' => \App\Models\Category::forUser($user->id)->parentsOnly()->get(['id', 'name']),
+        ]);
+    }
+
+    // Di App\Http\Controllers\Api\ReportController.php
+
+    /**
+     * Export CSV untuk Flutter
+     */
+    public function exportCsv(Request $request): \Illuminate\Http\Response
+    {
+        $request->validate([
+            'from'        => ['required', 'date'],
+            'to'          => ['required', 'date', 'after_or_equal:from'],
+            'type'        => ['nullable', 'in:income,expense,transfer'],
+            'account_id'  => ['nullable', 'uuid'],
+            'category_id' => ['nullable', 'uuid'],
+        ]);
+
+        $transactions = Transaction::forUser($request->user()->id)
+            ->with(['account:id,name', 'category:id,name'])
+            ->whereBetween('date', [$request->from, $request->to])
+            ->when($request->filled('type'),        fn($q) => $q->where('type', $request->type))
+            ->when($request->filled('account_id'),  fn($q) => $q->where('account_id', $request->account_id))
+            ->when($request->filled('category_id'), fn($q) => $q->where('category_id', $request->category_id))
+            ->latest('date')
+            ->get();
+
+        $rows   = [];
+        $rows[] = ['Tanggal', 'Tipe', 'Rekening', 'Kategori', 'Keterangan', 'Jumlah (IDR)'];
+
+        foreach ($transactions as $tx) {
+            $rows[] = [
+                $tx->date->format('d/m/Y'),
+                $tx->type->label(),
+                $tx->account->name,
+                $tx->category?->name ?? '-',
+                $tx->note ?? '-',
+                $tx->type->value === 'expense' ? '-' . $tx->amount : $tx->amount,
+            ];
+        }
+
+        $income  = $transactions->where('type', 'income')->sum('amount_base');
+        $expense = $transactions->where('type', 'expense')->sum('amount_base');
+        $rows[]  = [];
+        $rows[]  = ['', '', '', '', 'Total Pemasukan', $income];
+        $rows[]  = ['', '', '', '', 'Total Pengeluaran', $expense];
+        $rows[]  = ['', '', '', '', 'Selisih', $income - $expense];
+
+        $filename = 'transaksi_' . $request->from . '_sd_' . $request->to . '.csv';
+
+        $output = fopen('php://temp', 'r+');
+        fwrite($output, "\xEF\xBB\xBF"); // BOM UTF-8
+        foreach ($rows as $row) {
+            fputcsv($output, $row);
+        }
+        rewind($output);
+        $csv = stream_get_contents($output);
+        fclose($output);
+
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    /**
+     * Export PDF untuk Flutter
+     */
+    public function exportPdf(Request $request): \Symfony\Component\HttpFoundation\Response
+    {
+        $request->validate([
+            'from'        => ['required', 'date'],
+            'to'          => ['required', 'date', 'after_or_equal:from'],
+            'type'        => ['nullable', 'in:income,expense,transfer'],
+            'account_id'  => ['nullable', 'uuid'],
+            'category_id' => ['nullable', 'uuid'],
+        ]);
+
+        $transactions = Transaction::forUser($request->user()->id)
+            ->with(['account:id,name', 'category:id,name,color'])
+            ->whereBetween('date', [$request->from, $request->to])
+            ->when($request->filled('type'),        fn($q) => $q->where('type', $request->type))
+            ->when($request->filled('account_id'),  fn($q) => $q->where('account_id', $request->account_id))
+            ->when($request->filled('category_id'), fn($q) => $q->where('category_id', $request->category_id))
+            ->latest('date')
+            ->get();
+
+        $user     = $request->user();
+        $income   = $transactions->where('type', 'income')->sum('amount_base');
+        $expense  = $transactions->where('type', 'expense')->sum('amount_base');
+        $balance  = $income - $expense;
+        $fromDate = \Carbon\Carbon::parse($request->from)->translatedFormat('d F Y');
+        $toDate   = \Carbon\Carbon::parse($request->to)->translatedFormat('d F Y');
+
+        $byCategory = $transactions
+            ->where('type', 'expense')
+            ->groupBy('category_id')
+            ->map(fn($g) => [
+                'name'  => $g->first()->category?->name ?? 'Tanpa Kategori',
+                'color' => $g->first()->category?->color ?? '#6b7280',
+                'total' => $g->sum('amount_base'),
+            ])
+            ->sortByDesc('total')
+            ->values();
+
+        $pdf      = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.pdf', compact(
+            'transactions', 'user',
+            'income', 'expense', 'balance',
+            'fromDate', 'toDate', 'byCategory'
+        ))->setPaper('a4', 'portrait');
+
+        $filename = 'laporan_' . $request->from . '_sd_' . $request->to . '.pdf';
+
+        return $pdf->download($filename);
+    }
 }
